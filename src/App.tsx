@@ -14,20 +14,20 @@ function App() {
         onLawnDefined={(lawn) => setLawn(lawn)}
         onMowersDefined={(mowers) => setMowers(mowers)}
       />
-      {lawn && (
+
+      {lawn && mowers.length > 0 && (
         <div>
-          <h2>Lawn size: {lawn.widthX} x {lawn.widthY}</h2>
-          {mowers.map((mower) => (
-            <Mower 
-              key={mower.id}
-              x={mower.x}
-              y={mower.y}
-              orientation={mower.orientation as MowerOrientation}
-              program={mower.program}
-              maxX={lawn.widthX}
-              maxY={lawn.widthY}
-            />
-          ))}
+          <div>
+            {mowers.map((mower) => (
+              <Mower ref={mower.ref} key={mower.id}
+                x={mower.x} y={mower.y} orientation={mower.orientation as MowerOrientation}
+                program={mower.program} maxX={lawn.widthX} maxY={lawn.widthY}
+              />
+            ))}
+          </div>
+          <div style={{ margin: '10px', padding: '10px', border: '2px solid ', backgroundColor: 'lightgreen' }}>
+            <h3>Lawn size: {lawn.widthX} x {lawn.widthY}</h3>
+          </div>
         </div>
       )}
     </div>

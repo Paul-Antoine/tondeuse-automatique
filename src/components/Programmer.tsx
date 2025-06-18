@@ -1,4 +1,5 @@
-import { useState, type ChangeEvent } from 'react';
+import { createRef, useState, type ChangeEvent } from 'react';
+import type { MowerHandle } from '../components/Mower';
 
 export interface LawnDef {
   widthX: number;
@@ -11,6 +12,7 @@ export interface MowerDef {
   y: number;
   orientation: string;
   program: string;
+  ref: React.RefObject<MowerHandle | null>;
 }
 
 interface ProgrammerProps {
@@ -20,6 +22,7 @@ interface ProgrammerProps {
 
 export default function Programmer({ onLawnDefined: onLawnDefined, onMowersDefined: onMowersDefined }: ProgrammerProps) {
   const [error, setError] = useState<string | null>(null);
+  const [mowers, setMowers] = useState<MowerDef[]>([]);
 
   const handleFileUpload = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -52,9 +55,10 @@ export default function Programmer({ onLawnDefined: onLawnDefined, onMowersDefin
             if (isNaN(x) || isNaN(y) || !'NESW'.includes(dir)) {
                 throw new Error(`Ligne tondeuse invalide à la ligne ${i + 1}`);
             }
-            mowers.push({ id: mowers.length, x, y, orientation: dir, program: programLine });
+            mowers.push({ ref: createRef<MowerHandle>(), id: mowers.length, x, y, orientation: dir, program: programLine });
         }
 
+        setMowers(mowers);
         onMowersDefined(mowers);
       } catch (err: any) {
         setError(err.message);
@@ -64,13 +68,27 @@ export default function Programmer({ onLawnDefined: onLawnDefined, onMowersDefin
     reader.readAsText(file);
   };
 
+  const handleStart = async () => {
+    for (let i = 0; i < mowers.length; i++) {
+      const mower = mowers[i].ref.current;
+      if (mower) {
+        await mower.run();
+      }
+    }
+  };
+
   return (
+    <div style={{ margin: '10px', padding: '10px', border: '2px solid ' }}>
+    <h3>Programmation des tondeuses</h3>
     <div>
       <label>
-        Fichier de configuration :
-        <input type="file" accept=".txt" onChange={handleFileUpload} className="mt-2" />
+        <input type="file" accept=".txt" onChange={handleFileUpload} />
       </label>
       {error && <p>Erreur : {error}</p>}
+    </div>
+    <div style={{ marginTop: '20px' }}>
+      <button onClick={handleStart}>Démarrer</button>
+    </div>
     </div>
   );
 }

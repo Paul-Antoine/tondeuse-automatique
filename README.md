@@ -36,7 +36,7 @@ bouge que lorsque la première a exécuté intégralement sa série d'instructio
 Lorsqu'une tondeuse achève une série d'instructions, elle affiche sa position et son orientation.
 
 # Test
-Le fichier .txt suivant à lire :
+Le fichier .txt suivant à lire :  
 55  
 44 S  
 LFRRFFLFRFF  

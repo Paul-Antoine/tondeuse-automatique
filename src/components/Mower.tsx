@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useImperativeHandle, forwardRef, useState } from 'react';
 import type { MowerOrientation, MowerOrder, Coordinates, Position } from './Types';
 
 interface MowerProps {
@@ -10,7 +10,12 @@ interface MowerProps {
   program?: string;
 }
 
-export default function Mower(props: MowerProps) {
+export interface MowerHandle {
+  run: () => Promise<void>;
+  move: (direction: MowerOrder) => void;
+}
+
+const Mower = forwardRef<MowerHandle, MowerProps>((props, ref) => {
   const lawnLimit: Coordinates = { x: props.maxX, y: props.maxY };
   const program = props.program;
   const [position, setPosition] = useState<Position>({ x: props.x, y: props.y, orientation: props.orientation });
@@ -33,21 +38,29 @@ export default function Mower(props: MowerProps) {
   };
 
   const run = () => {
-    if (program && !isRunning) {
-      setIsRunning(true);
-      let currentIndex = 0;
-      let interval = setInterval(() => {
-        const order: MowerOrder | undefined = program.charAt(currentIndex) as MowerOrder;
-        if (order) {
-          move(order);
-          currentIndex++;
-        } else {
-          clearInterval(interval);
-          setIsRunning(false);
-        }
-      }, 500);
-    }
+    return new Promise<void>((resolve) => {
+      if (program && !isRunning) {
+        setIsRunning(true);
+        let currentIndex = 0;
+        let interval = setInterval(() => {
+          const order: MowerOrder | undefined = program.charAt(currentIndex) as MowerOrder;
+          if (order) {
+            move(order);
+            currentIndex++;
+          } else {
+            clearInterval(interval);
+            setIsRunning(false);
+            resolve();
+          }
+        }, 500);
+      }
+    });
   };
+
+  useImperativeHandle(ref, () => ({
+    run,
+    move,
+  }));
 
   return (
     <div style={{ margin: '10px', padding: '10px', border: '1px solid green' }}>
@@ -63,7 +76,7 @@ export default function Mower(props: MowerProps) {
       </div>
     </div>
   );
-};
+});
 
 function moveForward(pos : Position, lawnLimit: Coordinates): Coordinates {
   // Check if the mower is at the edge of the lawn
@@ -97,3 +110,5 @@ function rotate(orientation: MowerOrientation, order: MowerOrder): MowerOrientat
       return orientation;
   }
 };
+
+export default Mower;
