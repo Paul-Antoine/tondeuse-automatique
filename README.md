@@ -37,12 +37,12 @@ Lorsqu'une tondeuse achève une série d'instructions, elle affiche sa position 
 
 # Test
 Le fichier .txt suivant à lire :
-55
-44 S
-LFRRFFLFRFF
-22 N
-FFRLLRFRLF
+55  
+44 S  
+LFRRFFLFRFF  
+22 N  
+FFRLLRFRLF  
 
-On attend les positions finales suivantes :
-Pour la tondeuse 1 [1, 3] et orientation W
-Pour la tondeuse 2 [2, 5] et orientation N
+On attend les positions finales suivantes :  
+Pour la tondeuse 1 [1, 3] et orientation W  
+Pour la tondeuse 2 [2, 5] et orientation N  
