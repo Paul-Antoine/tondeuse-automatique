@@ -1,9 +1,9 @@
+import './Programmer.css';
 import { createRef, useState, type ChangeEvent } from 'react';
 import type { MowerHandle } from '../components/Mower';
 
 export interface LawnDef {
-  widthX: number;
-  widthY: number;
+  size: { x: number; y: number };
 }
 
 export interface MowerDef {
@@ -23,10 +23,13 @@ interface ProgrammerProps {
 export default function Programmer({ onLawnDefined: onLawnDefined, onMowersDefined: onMowersDefined }: ProgrammerProps) {
   const [error, setError] = useState<string | null>(null);
   const [mowers, setMowers] = useState<MowerDef[]>([]);
+  const [fileName, setFileName] = useState<string | null>(null);
+  const [isRunning, setIsRunning] = useState(false);
 
   const handleFileUpload = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    setFileName(file.name);
 
     const reader = new FileReader();
     reader.onload = (event) => {
@@ -40,7 +43,7 @@ export default function Programmer({ onLawnDefined: onLawnDefined, onMowersDefin
         const widthY = Number(widthYStr);
         if (isNaN(widthX) || isNaN(widthY)) throw new Error('Dimensions de pelouse invalides.');
 
-        onLawnDefined({ widthX: widthX, widthY: widthY });
+        onLawnDefined({ size: { x: widthX, y: widthY } });
 
         const mowers: MowerDef[] = [];
         for (let i = 1; i < lines.length; i += 2) {
@@ -69,26 +72,37 @@ export default function Programmer({ onLawnDefined: onLawnDefined, onMowersDefin
   };
 
   const handleStart = async () => {
+    setIsRunning(true);
+
     for (let i = 0; i < mowers.length; i++) {
       const mower = mowers[i].ref.current;
       if (mower) {
         await mower.run();
       }
     }
+
+    setIsRunning(false);
   };
 
   return (
-    <div style={{ margin: '10px', padding: '10px', border: '2px solid ' }}>
-    <h3>Programmation des tondeuses</h3>
-    <div>
-      <label>
-        <input type="file" accept=".txt" onChange={handleFileUpload} />
-      </label>
-      {error && <p>Erreur : {error}</p>}
-    </div>
-    <div style={{ marginTop: '20px' }}>
-      <button onClick={handleStart}>Démarrer</button>
-    </div>
+    <div className="programmer">
+      <h3>Programmation des tondeuses</h3>
+      <div>
+        <label htmlFor="file-upload-link" className='upload-link'>
+          {fileName ? `${fileName}` : 'Charger un fichier'}
+        </label>
+        <input
+          id="file-upload-link"
+          type="file"
+          accept=".txt"
+          onChange={handleFileUpload}
+          style={{ display: 'none' }}
+        />
+        {error && <p>Erreur : {error}</p>}
+      </div>
+      <div style={{ marginTop: '20px' }}>
+        <button onClick={handleStart} disabled={isRunning}>Démarrer</button>
+      </div>
     </div>
   );
 }

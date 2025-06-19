@@ -1,13 +1,15 @@
+import './Mower.css';
 import { useImperativeHandle, forwardRef, useState } from 'react';
 import type { MowerOrientation, MowerOrder, Coordinates, Position } from './Types';
 
 interface MowerProps {
+  name: string;
   x: number;
   y: number;
-  maxX: number;
-  maxY: number;
+  lawnSize: { x: number; y: number };
   orientation: MowerOrientation;
   program?: string;
+  speed?: number;
 }
 
 export interface MowerHandle {
@@ -15,10 +17,9 @@ export interface MowerHandle {
   move: (direction: MowerOrder) => void;
 }
 
-const Mower = forwardRef<MowerHandle, MowerProps>((props, ref) => {
-  const lawnLimit: Coordinates = { x: props.maxX, y: props.maxY };
-  const program = props.program;
-  const [position, setPosition] = useState<Position>({ x: props.x, y: props.y, orientation: props.orientation });
+const Mower = forwardRef<MowerHandle, MowerProps>(({name, x, y, lawnSize, orientation, program, speed}, ref) => {
+  const lawnLimit: Coordinates = lawnSize;
+  const [position, setPosition] = useState<Position>({ x, y, orientation });
   const [isRunning, setIsRunning] = useState(false);
 
   const move = (direction: MowerOrder) => {
@@ -40,6 +41,12 @@ const Mower = forwardRef<MowerHandle, MowerProps>((props, ref) => {
   const run = () => {
     return new Promise<void>((resolve) => {
       if (program && !isRunning) {
+        if(program.length == 1) {
+          move(program.charAt(0) as MowerOrder);
+          resolve();
+          return;
+        }
+        
         setIsRunning(true);
         let currentIndex = 0;
         let interval = setInterval(() => {
@@ -63,17 +70,19 @@ const Mower = forwardRef<MowerHandle, MowerProps>((props, ref) => {
   }));
 
   return (
-    <div style={{ margin: '10px', padding: '10px', border: '1px solid green' }}>
-      <div>Orientation: {position.orientation}</div>
-      <div>Position: {position.x}, {position.y}</div>
-      <div>
-        <button onClick={() => move('L')}>L</button>
-        <button onClick={() => move('F')}>F</button>
-        <button onClick={() => move('R')}>R</button>
-      </div>
-      <div>
-        {program && (<button onClick={run} disabled={isRunning}>Start</button>)}
-      </div>
+    <div className="mower">
+      <span className='mower-name'>{name}</span>
+      <span>Position: {position.x}, {position.y}, {position.orientation}</span>
+      {program && (
+        <button 
+          onClick={run} 
+          disabled={isRunning} 
+          title={`program: ${program}`}
+          style={{ background: isRunning ? '#ffdada' : '' }}
+        >
+          Start
+        </button>
+      )}
     </div>
   );
 });
