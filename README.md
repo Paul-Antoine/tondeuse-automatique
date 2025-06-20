@@ -1,4 +1,36 @@
-# Tondeuse à gazon automatique
+# Tondeuse à gazon automatique (projet test)
+
+### Prérequis
+- [node.js](https://nodejs.org/en)  
+- [pnpm](https://pnpm.io/installation)  
+
+### Installation
+Cloner le projet  
+```
+git clone https://github.com/Paul-Antoine/tondeuse-automatique.git
+```  
+Installer les dépendences   
+```
+cd tondeuse-automatique
+pnpm install
+```
+Lancer le projet en local  
+```  
+pnpm dev
+```    
+Ouvrir http://localhost:5173/
+
+### Utilisation
+Charger le fichier [resources/MowersProgram.txt](https://github.com/Paul-Antoine/tondeuse-automatique/blob/master/resources/MowersProgram.txt)  
+Cliquer sur le bouton "Démarrer" du Programmateur  
+
+### Tests unitaires
+```
+pnpm test
+```  
+
+
+# Spécifications
 
 La pelouse est divisée en grilles pour simplifier la navigation.
 
@@ -35,7 +67,7 @@ bouge que lorsque la première a exécuté intégralement sa série d'instructio
 
 Lorsqu'une tondeuse achève une série d'instructions, elle affiche sa position et son orientation.
 
-# Test
+### Test
 Le fichier .txt suivant à lire :  
 55  
 44 S  
