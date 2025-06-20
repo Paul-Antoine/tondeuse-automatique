@@ -1,6 +1,5 @@
 import './Programmer.css';
-import { createRef, useState, type ChangeEvent } from 'react';
-import type { MowerHandle } from '../components/Mower';
+import { useState, type ChangeEvent } from 'react';
 import type { MowerOrientation, Position } from './Types';
 
 export interface LawnDef {
@@ -11,18 +10,18 @@ export interface MowerDef {
   id: number;
   position: Position;
   program: string;
-  ref: React.RefObject<MowerHandle | null>;
 }
 
 interface ProgrammerProps {
   onLawnDefined: (lawn: LawnDef) => void;
   onMowersDefined: (mowers: MowerDef[]) => void;
+  onMowerStart: (mowerId: number) => Promise<void>;
 }
 
-export default function Programmer({ onLawnDefined: onLawnDefined, onMowersDefined: onMowersDefined }: ProgrammerProps) {
+export default function Programmer({ onLawnDefined: onLawnDefined, onMowersDefined: onMowersDefined, onMowerStart: onMowerStart }: ProgrammerProps) {
   const [error, setError] = useState<string | null>(null);
-  const [mowers, setMowers] = useState<MowerDef[]>([]);
   const [fileName, setFileName] = useState<string | null>(null);
+  const [mowersId, setMowersId] = useState<number[]>([]);
   const [isRunning, setIsRunning] = useState(false);
 
   const handleFileUpload = (e: ChangeEvent<HTMLInputElement>) => {
@@ -32,10 +31,11 @@ export default function Programmer({ onLawnDefined: onLawnDefined, onMowersDefin
 
     const reader = new FileReader();
     reader.onload = (event) => {
+      setError(null);
       const text = event.target?.result as string;
       try {
         const lines = text.split('\n').map(line => line.trim());
-        if (lines.length < 1) throw new Error('Le fichier est vide ou invalide.');
+        if (!lines.length) throw new Error('Le fichier est vide ou invalide.');
 
         const [widthXStr, widthYStr] = lines[0].split('');
         const widthX = Number(widthXStr);
@@ -45,22 +45,27 @@ export default function Programmer({ onLawnDefined: onLawnDefined, onMowersDefin
         onLawnDefined({ size: { x: widthX, y: widthY } });
 
         const mowers: MowerDef[] = [];
+        const mowersId: number[] = [];
         for (let i = 1; i < lines.length; i += 2) {
           const positionLine = lines[i];
           const programLine = lines[i + 1];
             if (!positionLine || !programLine) {
                 throw new Error(`Ligne tondeuse invalide à la ligne ${i + 1}`);
             }
+
             const [xStr, yStr, orientation] = positionLine.split('').map(e => e.trim()).filter(e => !!e);
             const x = Number(xStr);
             const y = Number(yStr);
             if (isNaN(x) || isNaN(y) || !'NESW'.includes(orientation)) {
                 throw new Error(`Ligne tondeuse invalide à la ligne ${i + 1}`);
             }
-            mowers.push({ ref: createRef<MowerHandle>(), id: mowers.length, position: { x, y, orientation: orientation as MowerOrientation }, program: programLine });
+
+            const mowerId = mowers.length;
+            mowersId.push(mowerId);
+            mowers.push({ id: mowerId, position: { x, y, orientation: orientation as MowerOrientation }, program: programLine });
         }
 
-        setMowers(mowers);
+        setMowersId(mowersId);
         onMowersDefined(mowers);
       } catch (err: any) {
         setError(err.message);
@@ -73,11 +78,8 @@ export default function Programmer({ onLawnDefined: onLawnDefined, onMowersDefin
   const handleStart = async () => {
     setIsRunning(true);
 
-    for (let i = 0; i < mowers.length; i++) {
-      const mower = mowers[i].ref.current;
-      if (mower) {
-        await mower.run();
-      }
+    for (let i = 0; i < mowersId.length; i++) {
+      await onMowerStart(mowersId[i]);
     }
 
     setIsRunning(false);
