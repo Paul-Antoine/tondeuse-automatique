@@ -35,21 +35,21 @@ export default function Garden() {
       />
 
       {lawnDef && mowersDef.length && (
-        <div className='mowers-container'>
-          {mowersDef.map((mower) => (
-            <Mower 
-              name={`Tondeuse ${mower.id + 1}`}
-              ref={mowersRef[mower.id]} 
-              key={mower.id}
-              position={mower.position}
-              program={mower.program} 
-              lawnSize={lawnDef.size}
-            />
-          ))}
-        </div>
+        <Lawn size={lawnDef.size}>
+          <div className="mowers-container">
+            {mowersDef.map((mower) => (
+              <Mower 
+                name={`Tondeuse ${mower.id + 1}`}
+                ref={mowersRef[mower.id]} 
+                key={mower.id}
+                position={mower.position}
+                program={mower.program} 
+                lawnSize={lawnDef.size}
+              />
+            ))}
+          </div>
+        </Lawn>
       )}
-
-      {lawnDef && (<Lawn size={lawnDef.size} />)}
     </div>
   );
 }

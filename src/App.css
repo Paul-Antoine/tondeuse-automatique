@@ -4,8 +4,3 @@
   padding: 2rem;
   text-align: center;
 }
-
-.mowers-container {
-  display: flex;
-  flex-direction: column;
-}
