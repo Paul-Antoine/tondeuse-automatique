@@ -4,12 +4,9 @@ import type { MowerOrientation, MowerOrder, Coordinates, Position } from './Type
 
 interface MowerProps {
   name: string;
-  x: number;
-  y: number;
+  position: Position;
   lawnSize: { x: number; y: number };
-  orientation: MowerOrientation;
   program?: string;
-  speed?: number;
 }
 
 export interface MowerHandle {
@@ -17,9 +14,8 @@ export interface MowerHandle {
   move: (direction: MowerOrder) => void;
 }
 
-const Mower = forwardRef<MowerHandle, MowerProps>(({name, x, y, lawnSize, orientation, program, speed}, ref) => {
-  const lawnLimit: Coordinates = lawnSize;
-  const [position, setPosition] = useState<Position>({ x, y, orientation });
+const Mower = forwardRef<MowerHandle, MowerProps>(({name, position: initialPosition, lawnSize, program}, ref) => {
+  const [position, setPosition] = useState<Position>(initialPosition);
   const [isRunning, setIsRunning] = useState(false);
 
   const move = (direction: MowerOrder) => {
@@ -27,7 +23,7 @@ const Mower = forwardRef<MowerHandle, MowerProps>(({name, x, y, lawnSize, orient
       let { x, y, orientation } = prev;
 
       if (direction == 'F') {
-        return { ...moveForward(prev, lawnLimit), orientation };
+        return { ...moveForward(prev, lawnSize), orientation };
       }
 
       if (direction == 'R' || direction == 'L') {
@@ -46,7 +42,7 @@ const Mower = forwardRef<MowerHandle, MowerProps>(({name, x, y, lawnSize, orient
           resolve();
           return;
         }
-        
+
         setIsRunning(true);
         let currentIndex = 0;
         let interval = setInterval(() => {

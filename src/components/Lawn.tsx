@@ -1,10 +1,10 @@
 import './Lawn.css';
 
 interface LawnProps {
-  width: {x: number, y: number};
+  size: {x: number, y: number};
 }
 
-export default function Lawn({ width } : LawnProps) {
+export default function Lawn({ size: width } : LawnProps) {
 
   return (
     <div className='lawn'>

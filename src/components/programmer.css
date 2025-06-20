@@ -3,6 +3,7 @@
   padding: 10px;
   border: 2px solid green;
   background-color: lightyellow;
+  border-radius: 5px;
 }
 
 .upload-link {

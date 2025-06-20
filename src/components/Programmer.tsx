@@ -1,6 +1,7 @@
 import './Programmer.css';
 import { createRef, useState, type ChangeEvent } from 'react';
 import type { MowerHandle } from '../components/Mower';
+import type { MowerOrientation, Position } from './Types';
 
 export interface LawnDef {
   size: { x: number; y: number };
@@ -8,9 +9,7 @@ export interface LawnDef {
 
 export interface MowerDef {
   id: number;
-  x: number;
-  y: number;
-  orientation: string;
+  position: Position;
   program: string;
   ref: React.RefObject<MowerHandle | null>;
 }
@@ -52,13 +51,13 @@ export default function Programmer({ onLawnDefined: onLawnDefined, onMowersDefin
             if (!positionLine || !programLine) {
                 throw new Error(`Ligne tondeuse invalide à la ligne ${i + 1}`);
             }
-            const [xStr, yStr, dir] = positionLine.split('').map(e => e.trim()).filter(e => !!e);
+            const [xStr, yStr, orientation] = positionLine.split('').map(e => e.trim()).filter(e => !!e);
             const x = Number(xStr);
             const y = Number(yStr);
-            if (isNaN(x) || isNaN(y) || !'NESW'.includes(dir)) {
+            if (isNaN(x) || isNaN(y) || !'NESW'.includes(orientation)) {
                 throw new Error(`Ligne tondeuse invalide à la ligne ${i + 1}`);
             }
-            mowers.push({ ref: createRef<MowerHandle>(), id: mowers.length, x, y, orientation: dir, program: programLine });
+            mowers.push({ ref: createRef<MowerHandle>(), id: mowers.length, position: { x, y, orientation: orientation as MowerOrientation }, program: programLine });
         }
 
         setMowers(mowers);
@@ -86,7 +85,7 @@ export default function Programmer({ onLawnDefined: onLawnDefined, onMowersDefin
 
   return (
     <div className="programmer">
-      <h3>Programmation des tondeuses</h3>
+      <h3>Programmateur</h3>
       <div>
         <label htmlFor="file-upload-link" className='upload-link'>
           {fileName ? `${fileName}` : 'Charger un fichier'}
