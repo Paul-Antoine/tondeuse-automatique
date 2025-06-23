@@ -25,54 +25,19 @@ export default function Programmer({ onLawnDefined: onLawnDefined, onMowersDefin
   const [isRunning, setIsRunning] = useState(false);
 
   const handleFileUpload = (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const file = e.target.files?.[0] || null;
+    if(!file) {
+      return ;
+    }
+
     setFileName(file.name);
+    setError(null);
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      setError(null);
-      const text = event.target?.result as string;
-      try {
-        const lines = text.split('\n').map(line => line.trim());
-        if (!lines.length) throw new Error('Le fichier est vide ou invalide.');
-
-        const [widthXStr, widthYStr] = lines[0].split('');
-        const widthX = Number(widthXStr);
-        const widthY = Number(widthYStr);
-        if (isNaN(widthX) || isNaN(widthY)) throw new Error('Dimensions de pelouse invalides.');
-
-        onLawnDefined({ size: { x: widthX, y: widthY } });
-
-        const mowers: MowerDef[] = [];
-        const mowersId: number[] = [];
-        for (let i = 1; i < lines.length; i += 2) {
-          const positionLine = lines[i];
-          const programLine = lines[i + 1];
-            if (!positionLine || !programLine) {
-                throw new Error(`Ligne tondeuse invalide à la ligne ${i + 1}`);
-            }
-
-            const [xStr, yStr, orientation] = positionLine.split('').map(e => e.trim()).filter(e => !!e);
-            const x = Number(xStr);
-            const y = Number(yStr);
-            if (isNaN(x) || isNaN(y) || !'NESW'.includes(orientation)) {
-                throw new Error(`Ligne tondeuse invalide à la ligne ${i + 1}`);
-            }
-
-            const mowerId = mowers.length;
-            mowersId.push(mowerId);
-            mowers.push({ id: mowerId, position: { x, y, orientation: orientation as MowerOrientation }, program: programLine });
-        }
-
-        setMowersId(mowersId);
-        onMowersDefined(mowers);
-      } catch (err: any) {
-        setError(err.message);
-      }
+    const handleMowersDefined = (mowers: MowerDef[]) => {
+      setMowersId(mowers.map(mower => mower.id));
+      onMowersDefined(mowers);
     };
-    
-    reader.readAsText(file);
+    programReader(file, onLawnDefined, handleMowersDefined, setError);
   };
 
   const handleStart = async () => {
@@ -107,3 +72,46 @@ export default function Programmer({ onLawnDefined: onLawnDefined, onMowersDefin
     </div>
   );
 }
+
+async function programReader(
+    file: File,
+    onLawnDefined: (lawn: LawnDef) => void,
+    onMowersDefined: (mowers: MowerDef[]) => void,
+    onError: (error: string) => void) {
+  try {
+    const text = await file.text();
+
+    const lines = text.split('\n').map(line => line.trim());
+    if (!lines.length) throw new Error('Le fichier est vide ou invalide.');
+
+    const [widthXStr, widthYStr] = lines[0].split('');
+    const widthX = Number(widthXStr);
+    const widthY = Number(widthYStr);
+    if (isNaN(widthX) || isNaN(widthY)) throw new Error('Dimensions de pelouse invalides.');
+
+    onLawnDefined({ size: { x: widthX, y: widthY } });
+
+    const mowers: MowerDef[] = [];
+    for (let i = 1; i < lines.length; i += 2) {
+      const positionLine = lines[i];
+      const programLine = lines[i + 1];
+        if (!positionLine || !programLine) {
+            throw new Error(`Ligne tondeuse invalide à la ligne ${i + 1}`);
+        }
+
+        const [xStr, yStr, orientation] = positionLine.split('').map(e => e.trim()).filter(e => !!e);
+        const x = Number(xStr);
+        const y = Number(yStr);
+        if (isNaN(x) || isNaN(y) || !'NESW'.includes(orientation)) {
+            throw new Error(`Ligne tondeuse invalide à la ligne ${i + 1}`);
+        }
+
+        const mowerId = mowers.length;
+        mowers.push({ id: mowerId, position: { x, y, orientation: orientation as MowerOrientation }, program: programLine });
+    }
+
+    onMowersDefined(mowers);
+  } catch (err: any) {
+    onError(err.message);
+  }
+};
