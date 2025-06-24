@@ -4,9 +4,11 @@ import Mower from './Mower';
 import Lawn from './Lawn';
 import Programmer, { type LawnDef, type MowerDef } from './Programmer';
 import { type MowerHandle } from './Mower';
+import { type Position } from './Types';
 
 export default function Garden() {
   const [lawnDef, setLawnDef] = useState<LawnDef | null>(null);
+  const [mowerPosition, setMowerPosition] = useState<Position | null>(null)
   const [mowersDef, setMowersDef] = useState<MowerDef[]>([]);
   const [mowersRef, setMowersRef] = useState<React.RefObject<MowerHandle | null>[]>([]);
 
@@ -26,6 +28,10 @@ export default function Garden() {
     }
   };
 
+  const handlePositionChange = (pos: Position) => {
+    setMowerPosition(pos);
+  };
+
   return (
     <div className="garden">
       <Programmer 
@@ -35,20 +41,26 @@ export default function Garden() {
       />
 
       {lawnDef && mowersDef.length && (
-        <Lawn size={lawnDef.size}>
-          <div className="mowers-container">
-            {mowersDef.map((mower) => (
-              <Mower 
-                name={`Tondeuse ${mower.id + 1}`}
-                ref={mowersRef[mower.id]} 
-                key={mower.id}
-                position={mower.position}
-                program={mower.program} 
-                lawnSize={lawnDef.size}
-              />
-            ))}
-          </div>
-        </Lawn>
+        <div className="mowers-container">
+          {mowersDef.map((mower) => (
+            <Mower 
+              name={`Tondeuse ${mower.id + 1}`}
+              ref={mowersRef[mower.id]} 
+              key={mower.id}
+              position={mower.position}
+              program={mower.program} 
+              onPositionChange={handlePositionChange}
+              lawnSize={lawnDef.size}
+            />
+          ))}
+        </div>
+      )}
+
+      {lawnDef && (
+        <Lawn
+          size={lawnDef.size} 
+          mowerPosition={mowerPosition} 
+        />
       )}
     </div>
   );

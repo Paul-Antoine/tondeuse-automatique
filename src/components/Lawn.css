@@ -5,3 +5,20 @@
   background-color: lightgreen;
   border-radius: 5px;
 }
+
+.lawn-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--lawn-cols, 1), 50px);
+  grid-template-rows: repeat(var(--lawn-rows, 1), 50px);
+  gap: 1px;
+  margin-top: 10px;
+  justify-content: center;
+  align-content: center;
+}
+
+.lawn-square {
+  background: #d0ffd0;
+  vertical-align: middle;
+  text-align: center;
+  line-height: 50px;
+}

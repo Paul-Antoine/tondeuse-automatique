@@ -84,12 +84,13 @@ async function programReader(
     const lines = text.split('\n').map(line => line.trim());
     if (!lines.length) throw new Error('Le fichier est vide ou invalide.');
 
-    const [widthXStr, widthYStr] = lines[0].split('');
-    const widthX = Number(widthXStr);
-    const widthY = Number(widthYStr);
-    if (isNaN(widthX) || isNaN(widthY)) throw new Error('Dimensions de pelouse invalides.');
+    // first line = top right corner position (left bottom = 0, 0)
+    const [posXStr, posYStr] = lines[0].split('');
+    const posX = Number(posXStr);
+    const posY = Number(posYStr);
+    if (isNaN(posX) || isNaN(posY)) throw new Error('Dimensions de pelouse invalides.');
 
-    onLawnDefined({ size: { x: widthX, y: widthY } });
+    onLawnDefined({ size: { x: posX + 1, y: posY + 1} }); // size = pos + 1
 
     const mowers: MowerDef[] = [];
     for (let i = 1; i < lines.length; i += 2) {

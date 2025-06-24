@@ -7,6 +7,7 @@ interface MowerProps {
   position: Position;
   lawnSize: { x: number; y: number };
   program?: string;
+  onPositionChange: (pos: Position) => void;
 }
 
 export interface MowerHandle {
@@ -14,7 +15,7 @@ export interface MowerHandle {
   move: (direction: MowerOrder) => void;
 }
 
-const Mower = forwardRef<MowerHandle, MowerProps>(({name, position: initialPosition, lawnSize, program}, ref) => {
+const Mower = forwardRef<MowerHandle, MowerProps>(({name, position: initialPosition, lawnSize, program, onPositionChange}, ref) => {
   const [position, setPosition] = useState<Position>(initialPosition);
   const [isRunning, setIsRunning] = useState(false);
 
@@ -23,11 +24,15 @@ const Mower = forwardRef<MowerHandle, MowerProps>(({name, position: initialPosit
       let { x, y, orientation } = prev;
 
       if (direction == 'F') {
-        return { ...moveForward(prev, lawnSize), orientation };
+        const newPos = { ...moveForward(prev, lawnSize), orientation };
+        onPositionChange && onPositionChange(newPos);
+        return newPos;
       }
 
       if (direction == 'R' || direction == 'L') {
-        return { x, y, orientation: rotate(orientation, direction) };
+        const newPos = { x, y, orientation: rotate(orientation, direction) };
+        onPositionChange && onPositionChange(newPos);
+        return newPos;
       }
 
       return prev;
@@ -83,10 +88,10 @@ const Mower = forwardRef<MowerHandle, MowerProps>(({name, position: initialPosit
   );
 });
 
-function moveForward(pos : Position, lawnLimit: Coordinates): Coordinates {
+function moveForward(pos : Position, lawnSize: Coordinates): Coordinates {
   // Check if the mower is at the edge of the lawn
-  if ((pos.orientation == 'N' && pos.y + 1 > lawnLimit.y)
-    || (pos.orientation == 'E' && pos.x + 1 > lawnLimit.x)
+  if ((pos.orientation == 'N' && pos.y + 1 >= lawnSize.y)
+    || (pos.orientation == 'E' && pos.x + 1 >= lawnSize.x)
     || (pos.orientation == 'W' && pos.x - 1 < 0)
     || (pos.orientation == 'S' && pos.y - 1 < 0)) return pos;
 
