@@ -1,11 +1,24 @@
 .garden {
   display: flex;
   flex-direction: column;
-  min-width: 300px;
   background-color: #f6fff6;
   padding: 20px;
   border: 1px solid green;
   border-radius: 5px;
+}
+
+@media (min-width: 800px) {
+  .garden {
+    flex-direction: row;
+  }
+  .garden-left {
+    display: flex;
+    flex-direction: column;
+  }
+  .garden-right {
+    display: flex;
+    flex-direction: column;
+  }
 }
 
 .mowers-container {

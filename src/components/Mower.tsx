@@ -7,7 +7,7 @@ interface MowerProps {
   position: Position;
   lawnSize: { x: number; y: number };
   program?: string;
-  onPositionChange: (pos: Position) => void;
+  onPositionChange?: (pos: Position) => void;
 }
 
 export interface MowerHandle {
